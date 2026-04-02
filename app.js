@@ -1,4 +1,4 @@
-const BASE_URL = 'http://openapi.seoul.go.kr:8088';
+const BASE_URL = 'https://openapi.seoul.go.kr:8088';
 const SERVICE_NAME = 'tbLnOpendataRtmsV';
 const API_KEY = '61656e5a47646f6537336b64774647';
 const DEFAULT_ITEMS_PER_PAGE = 10;
