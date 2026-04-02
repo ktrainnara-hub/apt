@@ -1,10 +1,18 @@
-const BASE_URL = 'https://openapi.seoul.go.kr:8088';
+const BASE_URL = 'http://openapi.seoul.go.kr:8088';
 const SERVICE_NAME = 'tbLnOpendataRtmsV';
 const API_KEY = '61656e5a47646f6537336b64774647';
 const DEFAULT_ITEMS_PER_PAGE = 10;
 const FILTERED_ITEMS_PER_PAGE = 500; // Increased for better graphing
+const PROXY_URL = 'https://api.allorigins.win/raw?url='; // Use HTTPS Proxy to avoid Mixed Content
 
 let currentPage = 1;
+
+// Helper to fetch through proxy
+async function fetchWithProxy(url) {
+    const proxiedUrl = `${PROXY_URL}${encodeURIComponent(url)}`;
+    const response = await fetch(proxiedUrl);
+    return response;
+}
 let currentSearchFilters = {
     cggNm: '',
     stdgNm: '',
@@ -73,20 +81,16 @@ async function fetchBuildingNames(district, neighborhood) {
     bldgNmSelect.innerHTML = '<option value="">데이터 로딩 중...</option>';
     bldgNmSelect.disabled = true;
 
-    // Fetch a larger sample from the district to extract building names for the neighborhood
-    // We fetch by District Name (CGG_NM) and then filter by Neighborhood Name (STDG_NM) client-side
     const startIndex = 1;
-    const endIndex = 1000; // Fetch more to cover most buildings in the neighborhood
+    const endIndex = 1000; 
     
-    // URL path: .../startIndex/endIndex/RCPT_YR/CGG_CD/CGG_NM
     const url = `${BASE_URL}/${API_KEY}/json/${SERVICE_NAME}/${startIndex}/${endIndex}/ / /${encodeURIComponent(district)}`;
     
     try {
-        const response = await fetch(url);
+        const response = await fetchWithProxy(url);
         const data = await response.json();
         
         if (data[SERVICE_NAME] && data[SERVICE_NAME].row) {
-            // Filter by neighborhood name and extract unique building names
             const filteredRows = data[SERVICE_NAME].row.filter(r => r.STDG_NM === neighborhood);
             const uniqueBldgs = [...new Set(filteredRows.map(r => r.BLDG_NM))].sort();
             updateBuildingOptions(uniqueBldgs);
@@ -190,8 +194,8 @@ async function fetchRealPriceData() {
     showLoading(true);
     
     try {
-        console.log('Fetching URL:', url);
-        const response = await fetch(url);
+        console.log('Fetching URL through proxy:', url);
+        const response = await fetchWithProxy(url);
         const text = await response.text();
         
         let data;
